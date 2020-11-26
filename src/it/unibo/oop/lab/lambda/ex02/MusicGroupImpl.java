@@ -1,7 +1,9 @@
 package it.unibo.oop.lab.lambda.ex02;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -31,37 +33,58 @@ public final class MusicGroupImpl implements MusicGroup {
 
     @Override
     public Stream<String> orderedSongNames() {
-        return null;
+    	return this.songs
+    			.stream()
+    			.map(a -> a.songName)
+    			.sorted();
     }
 
     @Override
     public Stream<String> albumNames() {
-        return null;
-    }
+       return this.albums.keySet().stream();
+    } 
 
     @Override
     public Stream<String> albumInYear(final int year) {
-        return null;
+    	return albumNames()
+    			.filter(alb -> this.albums.get(alb).equals(year))
+    			.distinct();
     }
 
     @Override
     public int countSongs(final String albumName) {
-        return -1;
+        /*return (int) albumNames()
+        			.filter(alb ->  this.songs.equals(alb.equals(albumName)))
+        			.filter(album -> this.songs.equals(album))
+        			.count(); */
+    	return (int)this.songs.stream()
+    			.filter(song -> song.albumName.isPresent())
+    			.filter(song -> song.albumName.get().equals(albumName))
+    			.count();
     }
 
     @Override
     public int countSongsInNoAlbum() {
-        return -1;
+    	return (int) this.songs
+    					.stream()
+    					.filter(song ->  song.albumName.isEmpty())
+    					.count();
     }
 
     @Override
     public OptionalDouble averageDurationOfSongs(final String albumName) {
-        return null;
+    		return OptionalDouble.of(this.songs.stream()
+    					.filter(song -> song.albumName.isPresent())
+    					.map(song -> song.duration)
+    					.reduce(0.0, Double::sum) / countSongs(albumName));
+    	// return OptionalDouble.of(timeDouble.getAsDouble() / countSongs(albumName));
     }
 
     @Override
     public Optional<String> longestSong() {
-        return null;
+        return Optional.of(this.songs.stream()
+        		.max((a,b) -> Double.compare(a.duration, b.duration))
+        		.get().getSongName());
     }
 
     @Override
