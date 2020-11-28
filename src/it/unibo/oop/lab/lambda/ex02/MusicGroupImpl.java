@@ -1,13 +1,17 @@
 package it.unibo.oop.lab.lambda.ex02;
 
-import java.util.Collections;
+import static org.junit.jupiter.api.DynamicTest.stream;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Collectors.*;
 import java.util.stream.Stream;
 
 /**
@@ -72,24 +76,37 @@ public final class MusicGroupImpl implements MusicGroup {
     }
 
     @Override
-    public OptionalDouble averageDurationOfSongs(final String albumName) {
-    		return OptionalDouble.of(this.songs.stream()
+    public OptionalDouble averageDurationOfSongs(final String albumName) {	
+    	/* return OptionalDouble.of(this.songs.stream()
     					.filter(song -> song.albumName.isPresent())
     					.map(song -> song.duration)
-    					.reduce(0.0, Double::sum) / countSongs(albumName));
-    	// return OptionalDouble.of(timeDouble.getAsDouble() / countSongs(albumName));
+    					.reduce(0.0, Double::sum) / countSongs(albumName)); */
+    	return OptionalDouble.of(this.songs.stream()
+				.filter(song -> song.albumName.equals(Optional.of(albumName)))
+				.map(song -> song.duration)
+				.reduce(0.0, Double::sum) / countSongs(albumName));
     }
 
     @Override
     public Optional<String> longestSong() {
         return Optional.of(this.songs.stream()
-        		.max((a,b) -> Double.compare(a.duration, b.duration))
-        		.get().getSongName());
+        		.max((a, b) -> Double.compare(a.duration, b.duration))
+        		.get().getSongName()); 
     }
 
     @Override
     public Optional<String> longestAlbum() {
-        return null;
+        return Optional.of(this.songs.stream()
+        		.filter(song -> song.albumName.isPresent())
+        		.collect(Collectors.groupingBy(Song::getAlbumName,Collectors.summingDouble(Song::getDuration)))
+        // {Optional[II]=10.1, Optional[untitled]=12.0, Optional[III]=7.800000000000001, Optional[I]=11.1} 
+        		.entrySet()
+        // Optional[II]=10.1, Optional[untitled]=12.0, Optional[III]=7.800000000000001, Optional[I]=11.1
+        		.stream() //ora ho delle mappe 
+        	/*	.map(alb -> alb.getValue())
+        		.collect(Collectors.maxBy((d1, d2) -> Double.compare(d1, d2)))); */ // Funziona ma non ottengo il nome ma il double
+        		.max((a, b) -> Double.compare(a.getValue(), b.getValue()))
+        		.get().getKey().get());
     }
 
     private static final class Song {
