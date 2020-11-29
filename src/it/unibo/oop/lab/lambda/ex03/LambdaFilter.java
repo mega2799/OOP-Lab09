@@ -7,6 +7,8 @@ import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -48,10 +50,10 @@ public final class LambdaFilter extends JFrame {
         @Override
         public String toString() {
             return commandName;
-        }
+        } 
 
         public String translate(final String s) {
-            return fun.apply(s);
+        	return fun.apply(s);
         }
     }
 
@@ -62,7 +64,7 @@ public final class LambdaFilter extends JFrame {
         final LayoutManager layout = new BorderLayout();
         panel1.setLayout(layout);
         final JComboBox<Command> combo = new JComboBox<>(Command.values());
-        panel1.add(combo, BorderLayout.NORTH);
+        panel1.add(combo, BorderLayout.NORTH); 
         final JPanel centralPanel = new JPanel(new GridLayout(1, 2));
         final JTextArea left = new JTextArea();
         left.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -73,7 +75,20 @@ public final class LambdaFilter extends JFrame {
         centralPanel.add(right);
         panel1.add(centralPanel, BorderLayout.CENTER);
         final JButton apply = new JButton("Apply");
-        apply.addActionListener(ev -> right.setText(((Command) combo.getSelectedItem()).translate(left.getText())));
+        apply.addActionListener(ev -> right.setText(((Command) combo.getSelectedItem()).translate(
+        		left.getText().toLowerCase().lines()
+        		/*
+        		.map(a -> a.split("\\s+")) 
+        		.collect(Collectors.toMap(a -> "\n" + a.toString(), String::length)) 
+*/
+          		.map(a -> a.split("\\s+")) 
+        		.collect(Collectors.toMap(a -> "\n" + a.toString(), String::length)) 
+        		.entrySet()
+        		.toString()
+        		+ "\ntot lines: " + left.getText().lines().count()
+        		+ "\ntot charachters: " 
+        		+ Integer.toString(left.getText().lines().map(String::length).reduce(0, Integer::sum)))
+        		));
         panel1.add(apply, BorderLayout.SOUTH);
         setContentPane(panel1);
         final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
